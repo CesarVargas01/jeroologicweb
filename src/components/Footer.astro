@@ -1,0 +1,101 @@
+Arguments
+content:
+---
+import { Icon } from 'astro-icon/components';
+
+const socialLinks = [
+  { href: "https://wa.me/573208718037", icon: "fa-brands:whatsapp", name: "WhatsApp", hoverClass: "hover:bg-whatsapp" },
+  { href: "https://t.me/573208718037", icon: "fa-brands:telegram", name: "Telegram", hoverClass: "hover:bg-telegram" },
+  { href: "#", icon: "fa-brands:facebook-f", name: "Facebook", hoverClass: "hover:bg-blue-600" },
+  { href: "#", icon: "fa-brands:instagram", name: "Instagram", hoverClass: "hover:bg-pink-600" },
+];
+
+const serviceLinks = [
+  { href: "/#services", text: "Automatizaciones" },
+  { href: "/#services", text: "Bases de Datos" },
+  { href: "/#services", text: "Soluciones Cloud" },
+  { href: "/#services", text: "Desarrollo Web" },
+  { href: "/#services", text: "Integraciones" },
+];
+
+const legalLinks = [
+  { href: "#", text: "Términos y Condiciones" },
+  { href: "#", text: "Política de Privacidad" },
+  { href: "#", text: "Política de Cookies" },
+];
+---
+
+<footer class="bg-dark text-slate-300">
+  <div class="w-full max-w-screen-xl mx-auto px-5 py-16">
+    <!-- Footer Content Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+      
+      <!-- Column 1: Jeroo Logic & Social -->
+      <div class="sm:col-span-2 md:col-span-1">
+        <img src="/logo.svg" alt="Jeroo Logic Logo" class="h-10 mb-4 hidden">
+        <img src="/logo-dark.svg" alt="Jeroo Logic Logo" class="h-10 mb-4">
+        <p class="text-slate-400 mb-6">
+          Desarrollamos soluciones de software flexibles para optimizar y automatizar tus procesos empresariales.
+        </p>
+        <div class="flex space-x-3">
+          {socialLinks.map(link => (
+            <a 
+              href={link.href} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label={link.name}
+              class:list={[
+                "w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center transition-colors duration-300",
+                link.hoverClass
+              ]}
+            >
+              <Icon name={link.icon} class="w-5 h-5" />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Column 2: Services -->
+      <div>
+        <h3 class="text-xl font-bold text-white mb-4 pb-2 border-b-2 border-primary w-24">Servicios</h3>
+        <ul class="space-y-3">
+          {serviceLinks.map(link => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors duration-300">{link.text}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Column 3: Legal -->
+      <div>
+        <h3 class="text-xl font-bold text-white mb-4 pb-2 border-b-2 border-primary w-20">Legal</h3>
+        <ul class="space-y-3">
+          {legalLinks.map(link => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors duration-300">{link.text}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Column 4: Quick Links (Example) -->
+       <div>
+        <h3 class="text-xl font-bold text-white mb-4 pb-2 border-b-2 border-primary w-24">Enlaces</h3>
+        <ul class="space-y-3">
+           <li><a href="/" class="hover:text-white transition-colors duration-300">Inicio</a></li>
+           <li><a href="/#services" class="hover:text-white transition-colors duration-300">Servicios</a></li>
+           <li><a href="/recursos" class="hover:text-white transition-colors duration-300">Recursos</a></li>
+           <li><a href="/#technologies" class="hover:text-white transition-colors duration-300">Tecnologías</a></li>
+           <li><a href="/#contact" class="hover:text-white transition-colors duration-300">Contacto</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Copyright -->
+    <div class="text-center pt-8 border-t border-slate-700/50 text-slate-400 text-sm">
+      &copy; {new Date().getFullYear()} Jeroo Logic. Todos los derechos reservados.
+    </div>
+  </div>
+</footer>

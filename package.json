@@ -1,0 +1,24 @@
+{
+  "name": "jeroo-logic-web",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^6.0.2",
+    "@iconify-json/fa-brands": "^1.2.2",
+    "astro": "^4.0.0",
+    "astro-icon": "^1.1.5",
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^128.0.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16"
+  }
+}

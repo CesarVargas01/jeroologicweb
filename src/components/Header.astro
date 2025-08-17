@@ -1,0 +1,188 @@
+---
+import ThemeToggleButton from './ThemeToggleButton.astro';
+const currentPath = Astro.url.pathname;
+
+// Helper para determinar si un enlace está activo
+const isActive = (href: string) => {
+  if (href === '/') {
+    // Solo activo para la página de inicio exacta
+    return currentPath === '/';
+  }
+  // Activo si la ruta actual comienza con el href del enlace
+  return currentPath.startsWith(href);
+};
+
+const linkClasses = "px-4 py-2 rounded-md text-base font-semibold transition-colors duration-300";
+const activeLinkClasses = "bg-primary text-white";
+const inactiveLinkClasses = "text-dark hover:bg-primary/10 hover:text-primary dark:text-light dark:hover:bg-primary/20 dark:hover:text-light";
+
+const mobileLinkClasses = "block px-4 py-3 text-xl rounded-lg font-semibold transition-colors duration-300 w-full text-center";
+const activeMobileLinkClasses = "bg-primary text-white";
+const inactiveMobileLinkClasses = "text-dark hover:bg-primary/10 dark:text-light dark:hover:bg-primary/20";
+
+interface NavLink {
+  href: string;
+  text: string;
+  isExternal?: boolean;
+  subLinks?: NavLink[];
+}
+
+const navLinks: NavLink[] = [
+  { href: "/#services", text: "Servicios" },
+  { href: "/#chat-example", text: "Demo Chat" },
+  { href: "/#technologies", text: "Tecnologías" },
+  { href: "/#advantages", text: "Ventajas" },
+  {
+    href: "/recursos",
+    text: "Recursos",
+    subLinks: [
+      { href: "/blog", text: "Blog" },
+      { href: "/recursos#projects", text: "Proyectos" },
+      { href: "/certificaciones", text: "Certificaciones" },
+    ],
+  },
+  { href: "/#contact", text: "Contacto" },
+];
+---
+
+<header class="bg-white/80 backdrop-blur-md shadow-md fixed w-full top-0 z-50 dark:bg-dark/80 dark:shadow-lg">
+  <div class="w-full max-w-screen-xl mx-auto px-5">
+    <nav class="flex justify-between items-center py-3">
+      <!-- Logo -->
+      <a href="/" class="h-[50px] z-50">
+        <img src="/logo.svg" alt="Jeroo Logo" class="h-full w-auto dark:hidden" />
+        <img src="/logo-dark.svg" alt="Jeroo Logo" class="h-full w-auto hidden dark:block" />
+      </a>
+
+      <!-- Desktop Navigation -->
+      <ul class="hidden md:flex items-center space-x-2">
+        {navLinks.map(link => (
+          <li class={link.subLinks ? "relative group" : ""}>
+            <a
+              href={link.href}
+              class:list={[
+                linkClasses,
+                isActive(link.href) ? activeLinkClasses : inactiveLinkClasses,
+                link.subLinks ? "flex items-center gap-1.5" : ""
+              ]}
+            >
+              {link.text}
+              {link.subLinks && (
+                <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+              )}
+            </a>
+            {link.subLinks && (
+              <ul class="absolute top-full left-1/2 -translate-x-1/2 w-48 bg-white shadow-lg rounded-lg px-2 pb-2 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none group-hover:pointer-events-auto dark:bg-slate-800">
+                {link.subLinks.map(subLink => (
+                  <li>
+                    <a href={subLink.href} class:list={[
+                      "block w-full text-left px-4 py-2 rounded-md text-sm",
+                      isActive(subLink.href) ? "bg-primary/10 text-primary font-semibold dark:bg-primary/20" : "text-dark hover:bg-primary/5 dark:text-light dark:hover:bg-primary/10"
+                    ]}>
+                      {subLink.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+      
+      <!-- Right side controls -->
+      <div class="hidden md:flex items-center gap-4">
+        <ThemeToggleButton class="hidden" />
+        <a
+          href="https://t.me/573208718037"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-center w-11 h-11 bg-telegram text-white rounded-full transition-transform duration-300 hover:scale-110 hover:shadow-lg"
+          aria-label="Contactar por Telegram"
+        >
+          <i class="fab fa-telegram text-2xl"></i>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Toggle -->
+      <button id="menuToggle" class="md:hidden z-50 flex flex-col justify-center items-center w-8 h-8" aria-label="Abrir menú" aria-expanded="false">
+        <span class="block w-6 h-0.5 bg-dark dark:bg-light transition-transform duration-300 ease-in-out"></span>
+        <span class="block w-6 h-0.5 bg-dark dark:bg-light my-1.5 transition-opacity duration-300 ease-in-out"></span>
+        <span class="block w-6 h-0.5 bg-dark dark:bg-light transition-transform duration-300 ease-in-out"></span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="md:hidden fixed top-0 left-0 w-full h-screen bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center transition-transform duration-500 ease-in-out transform -translate-y-full z-40 dark:bg-dark/95">
+    
+    <ul class="flex flex-col items-center space-y-4 w-full px-10">
+       {navLinks.map(link => (
+          <li class="w-full">
+             <a
+              href={link.href}
+              class:list={[
+                mobileLinkClasses,
+                isActive(link.href) ? activeMobileLinkClasses : inactiveMobileLinkClasses
+              ]}
+              data-is-nav-link
+            >
+              {link.text}
+            </a>
+            {link.subLinks && (
+               <ul class="mt-2 space-y-2">
+                {link.subLinks.map(subLink => (
+                  <li>
+                    <a href={subLink.href} class:list={[
+                      "block text-center text-lg font-medium",
+                       isActive(subLink.href) ? "text-primary dark:text-primary-light" : "text-gray hover:text-primary dark:text-slate-400 dark:hover:text-primary-light"
+                    ]} data-is-nav-link>
+                      {subLink.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+    </ul>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const navLinks = document.querySelectorAll('[data-is-nav-link]');
+
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+        menuToggle.setAttribute('aria-expanded', String(!isExpanded));
+        
+        // Toggle menu visibility
+        mobileMenu.classList.toggle('-translate-y-full');
+        mobileMenu.classList.toggle('translate-y-0');
+
+        // Animate hamburger icon
+        const spans = menuToggle.querySelectorAll('span');
+        spans[0].classList.toggle('rotate-45');
+        spans[0].classList.toggle('translate-y-2');
+        spans[1].classList.toggle('opacity-0');
+        spans[2].classList.toggle('-rotate-45');
+        spans[2].classList.toggle('-translate-y-2');
+        
+        // Toggle body scroll
+        document.body.classList.toggle('overflow-hidden');
+      });
+    }
+
+    // Close menu when a link is clicked
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (mobileMenu && mobileMenu.classList.contains('translate-y-0')) {
+          menuToggle?.click();
+        }
+      });
+    });
+  });
+</script>

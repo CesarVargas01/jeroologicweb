@@ -1,0 +1,100 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string; // Opcional: URL de la imagen para redes sociales
+}
+
+const { title, description, image } = Astro.props;
+
+// Descripción por defecto si no se proporciona
+const finalDescription = description || "Jeroo Logic: Soluciones de software y tecnología para optimizar tus procesos empresariales con automatización, bases de datos y desarrollo web a medida.";
+
+// URL canónica para SEO
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// URL de la imagen para redes sociales (usa una por defecto si no se proporciona)
+const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/default-social.webp', Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- SEO Metadatos Fundamentales -->
+    <title>{title}</title>
+    <meta name="description" content={finalDescription} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={finalDescription} />
+    <meta property="og:image" content={socialImageURL} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={finalDescription} />
+    <meta property="twitter:image" content={socialImageURL} />
+
+    <link
+      rel="preload"
+      as="image"
+      href="/images/SolucionesdeSoftware-large.webp"
+      imagesrcset="/images/SolucionesdeSoftware-large.webp 1200w, /images/SolucionesdeSoftware-medium.webp 800w, /images/SolucionesdeSoftware-small.webp 400w"
+      imagesizes="(max-width: 768px) 100vw, 800px"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <link rel="stylesheet" href="/global.css" />
+  </head>
+  <body>
+    <a href="#main-content" class="absolute z-50 top-4 left-4 -translate-y-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 rounded-lg shadow-lg transition-transform duration-300 focus:translate-y-0">Saltar al contenido principal</a>
+    <Header />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+    <script src="/main.js" defer></script>
+    <a
+      href="https://wa.me/573208718037"
+      class="whatsapp-btn"
+      target="_blank"
+      aria-label="Chatea con nosotros por WhatsApp"
+    >
+      <i class="fab fa-whatsapp"></i>
+    </a>
+    <button id="scrollToTopBtn" aria-label="Volver arriba">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+  </body>
+</html>
