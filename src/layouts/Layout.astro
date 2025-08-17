@@ -176,24 +176,35 @@ const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/def
         });
 
         // Scroll to top button functionality
-        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            console.log('scrollToTopBtn element (inside DOMContentLoaded):', scrollToTopBtn); // Log the element
 
-        if (scrollToTopBtn) {
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) {
-                    scrollToTopBtn.classList.add('visible');
-                } else {
-                    scrollToTopBtn.classList.remove('visible');
-                }
-            });
-
-            scrollToTopBtn.addEventListener('click', () => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
+            if (scrollToTopBtn) {
+                window.addEventListener('scroll', () => {
+                    console.log('Scroll event detected. window.scrollY:', window.scrollY); // Log scroll position
+                    if (window.scrollY > 300) {
+                        if (!scrollToTopBtn.classList.contains('visible')) {
+                            scrollToTopBtn.classList.add('visible');
+                            console.log('Added "visible" class.');
+                        }
+                    } else {
+                        if (scrollToTopBtn.classList.contains('visible')) {
+                            scrollToTopBtn.classList.remove('visible');
+                            console.log('Removed "visible" class.');
+                        }
+                    }
                 });
-            });
-        }
+
+                scrollToTopBtn.addEventListener('click', () => {
+                    console.log('Scroll to top button clicked.');
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
       }
     </script>
     <a
