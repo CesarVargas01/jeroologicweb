@@ -92,38 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
         if (scrollToTopBtn) {
-            // Apply styles directly via JavaScript
-            Object.assign(scrollToTopBtn.style, {
-                position: 'fixed',
-                bottom: '110px',
-                right: '30px',
-                width: '50px',
-                height: '50px',
-                backgroundColor: '#223e7c', // var(--primary)
-                color: 'white',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: '1001',
-                cursor: 'pointer',
-                border: 'none',
-                transition: 'opacity 0.3s, transform 0.3s',
-                opacity: '0',
-                transform: 'translateY(10px)',
-                pointerEvents: 'none'
-            });
-
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 300) {
-                    scrollToTopBtn.style.opacity = '1';
-                    scrollToTopBtn.style.transform = 'translateY(0)';
-                    scrollToTopBtn.style.pointerEvents = 'auto';
+                    scrollToTopBtn.classList.add('visible');
                 } else {
-                    scrollToTopBtn.style.opacity = '0';
-                    scrollToTopBtn.style.transform = 'translateY(10px)';
-                    scrollToTopBtn.style.pointerEvents = 'none';
+                    scrollToTopBtn.classList.remove('visible');
                 }
             });
 
