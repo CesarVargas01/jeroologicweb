@@ -84,7 +84,7 @@ const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/def
       <slot />
     </main>
     <Footer />
-    <script>
+    <script client:load>
         // Mobile menu functionality
         const menuToggle = document.getElementById('menuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
