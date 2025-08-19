@@ -144,21 +144,56 @@ const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/def
         // Form submission handling
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
-            contactForm.addEventListener('submit', function(e) {
+            contactForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+
+                const submitButton = contactForm.querySelector('button[type="submit"]');
+                if (!submitButton) return;
+                const originalButtonText = submitButton.innerHTML;
                 
-                // Get form values
                 const nameInput = document.getElementById('name');
                 const emailInput = document.getElementById('email');
-                const name = nameInput ? nameInput.value : '';
-                const email = emailInput ? emailInput.value : '';
-                
-                // Simple validation
-                if (name && email) {
-                    alert(`¡Gracias ${name}! Hemos recibido tu mensaje y nos pondremos en contacto contigo pronto.`);
-                    contactForm.reset();
-                } else {
-                    alert('Por favor completa los campos requeridos.');
+                const companyInput = document.getElementById('company');
+                const messageInput = document.getElementById('message');
+
+                const data = {
+                    name: nameInput ? nameInput.value : '',
+                    email: emailInput ? emailInput.value : '',
+                    company: companyInput ? companyInput.value : '',
+                    message: messageInput ? messageInput.value : ''
+                };
+
+                if (!data.name || !data.email || !data.message) {
+                    alert('Por favor completa todos los campos requeridos.');
+                    return;
+                }
+
+                submitButton.disabled = true;
+                submitButton.innerHTML = 'Enviando...';
+
+                try {
+                    const response = await fetch('/api/submit-form', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert(result.message || `¡Gracias ${data.name}! Tu mensaje ha sido enviado.`);
+                        contactForm.reset();
+                    } else {
+                        alert(`Error: ${result.message || 'No se pudo enviar el mensaje.'}`);
+                    }
+                } catch (error) {
+                    console.error('Error al enviar el formulario:', error);
+                    alert('Ocurrió un error de red al enviar el formulario. Por favor, inténtalo de nuevo.');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
                 }
             });
         }
