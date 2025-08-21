@@ -207,13 +207,13 @@ class FormManager {
     // Set notification style based on type
     switch (type) {
       case 'success':
-        notification.classList.add('bg-green-500', 'text-white');
+        notification.classList.add('bg-green-500', 'text-gray-900');
         break;
       case 'error':
-        notification.classList.add('bg-red-500', 'text-white');
+        notification.classList.add('bg-red-500', 'text-gray-900');
         break;
       default:
-        notification.classList.add('bg-blue-500', 'text-white');
+        notification.classList.add('bg-blue-500', 'text-gray-900');
     }
 
     notification.innerHTML = `
