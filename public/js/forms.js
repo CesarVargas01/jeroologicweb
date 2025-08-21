@@ -202,7 +202,7 @@ class FormManager {
 
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`;
+    notification.className = `notification fixed top-4 left-1/2 transform -translate-x-1/2 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 opacity-0`;
     
     // Set notification style based on type
     switch (type) {
@@ -229,13 +229,13 @@ class FormManager {
 
     // Animate in
     setTimeout(() => {
-      notification.classList.remove('translate-x-full');
+      notification.classList.add('opacity-100');
     }, 100);
 
     // Auto remove after 5 seconds
     setTimeout(() => {
       if (notification.parentElement) {
-        notification.classList.add('translate-x-full');
+        notification.classList.remove('opacity-100');
         setTimeout(() => notification.remove(), 300);
       }
     }, 5000);
