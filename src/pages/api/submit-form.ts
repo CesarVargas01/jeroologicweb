@@ -18,10 +18,7 @@ if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
   // pero el endpoint fallará con un mensaje claro.
 }
 
-const kv = createClient({
-  url: process.env.KV_URL as string,
-  token: process.env.KV_REST_API_TOKEN as string,
-});
+const kv = createClient(process.env.KV_URL as string);
 
 /**
  * Implementa rate limiting persistente por IP usando Vercel KV
