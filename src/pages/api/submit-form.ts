@@ -221,7 +221,16 @@ export const POST: APIRoute = async ({ request }) => {
     );
 
   } catch (error) {
-    console.error('Error en submit-form API:', error);
+    console.error('--- DETAILED SUBMIT-FORM API ERROR ---');
+    console.error('Timestamp:', new Date().toISOString());
+    if (error instanceof Error) {
+      console.error('Error Name:', error.name);
+      console.error('Error Message:', error.message);
+      console.error('Error Stack:', error.stack);
+    } else {
+      console.error('Caught a non-Error object:', error);
+    }
+    console.error('--- END OF DETAILED ERROR ---');
 
     return new Response(
       JSON.stringify({
