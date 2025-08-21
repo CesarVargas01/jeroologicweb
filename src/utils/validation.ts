@@ -1,70 +1,34 @@
 /**
- * Utilidades para validación de datos
+ * Utilidades para validación de datos (DEPRECATED)
+ * @deprecated Use FormValidator from '../shared/validation.ts' instead
  */
 
-export interface ValidationResult {
-  isValid: boolean;
-  message: string;
-}
+// Re-export from shared module for backward compatibility
+export { 
+  FormValidator, 
+  VALIDATION_RULES 
+} from '../shared/validation';
+
+export type { 
+  ValidationResult, 
+  FormData as ValidatedFormData
+} from '../shared/validation';
+
+// Import for legacy functions
+import { FormValidator } from '../shared/validation';
+
+// Legacy exports for backward compatibility
+export const validateEmail = FormValidator.validateEmail;
+export const sanitizeInput = FormValidator.sanitizeInput;
+export const detectDangerousPatterns = FormValidator.detectDangerousPatterns;
 
 /**
- * Valida formato de email
- */
-export function validateEmail(email: string): ValidationResult {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  if (!email) {
-    return { isValid: false, message: 'El email es requerido.' };
-  }
-  
-  if (!emailRegex.test(email)) {
-    return { isValid: false, message: 'Por favor ingresa un email válido.' };
-  }
-  
-  return { isValid: true, message: 'Email válido' };
-}
-
-/**
- * Valida longitud de texto
+ * @deprecated Use FormValidator.validateTextLength instead
  */
 export function validateTextLength(
   text: string, 
   minLength: number, 
   fieldName: string
-): ValidationResult {
-  if (!text) {
-    return { isValid: false, message: `${fieldName} es requerido.` };
-  }
-  
-  if (text.length < minLength) {
-    return { 
-      isValid: false, 
-      message: `${fieldName} debe tener al menos ${minLength} caracteres.` 
-    };
-  }
-  
-  return { isValid: true, message: `${fieldName} válido` };
-}
-
-/**
- * Sanitiza entrada de texto para prevenir XSS
- */
-export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') return input;
-  
-  return input
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;')
-    .trim();
-}
-
-/**
- * Detecta patrones peligrosos para XSS
- */
-export function detectDangerousPatterns(text: string): boolean {
-  const dangerousPatterns = /<script|javascript:|on\w+=/i;
-  return dangerousPatterns.test(text);
+) {
+  return FormValidator.validateTextLength(text, fieldName, { minLength, required: true });
 }

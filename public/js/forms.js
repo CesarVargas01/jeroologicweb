@@ -103,11 +103,26 @@ class FormManager {
   }
 
   /**
-   * Valida los datos del formulario con múltiples verificaciones
+   * Valida los datos del formulario utilizando el módulo compartido
    * @param {Object} data - Los datos del formulario a validar
    * @returns {Object} Resultado de la validación con isValid y message
    */
   validateFormData(data) {
+    // Usar el validador compartido si está disponible
+    if (typeof window !== 'undefined' && window.FormValidator) {
+      return window.FormValidator.validateForm(data);
+    }
+
+    // Fallback a validación básica si el módulo compartido no está disponible
+    return this.validateFormDataFallback(data);
+  }
+
+  /**
+   * Validación de fallback (mantiene la lógica original como respaldo)
+   * @param {Object} data - Los datos del formulario a validar
+   * @returns {Object} Resultado de la validación con isValid y message
+   */
+  validateFormDataFallback(data) {
     // Required fields validation
     if (!data.name) {
       return { isValid: false, message: 'El nombre es requerido.' };

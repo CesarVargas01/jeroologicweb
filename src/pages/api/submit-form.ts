@@ -6,8 +6,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
-import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatterns } from '../../utils/validation';
+import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG } from '../../config/api';
+import { FormValidator, type FormData as ValidatedFormData } from '../../shared/validation';
 import { kv } from '@vercel/kv';
 
 // Verificar variables de entorno de Vercel KV
@@ -80,56 +80,37 @@ function checkRateLimitMemory(clientIP: string, windowMs: number, maxRequests: n
 }
 
 /**
- * Valida los datos del formulario utilizando funciones de utilidad
+ * Valida los datos del formulario utilizando el módulo compartido
  */
 function validateFormData(data: any): { valid: boolean; message?: string } {
   if (!data || typeof data !== 'object') {
     return { valid: false, message: 'Datos inválidos.' };
   }
 
-  // Validaciones de campos
-  const nameValidation = validateTextLength(data.name, VALIDATION_CONFIG.name.minLength, 'El nombre');
-  if (!nameValidation.isValid) return { valid: false, message: nameValidation.message };
+  // Usar el validador compartido
+  const validation = FormValidator.validateForm({
+    name: data.name || '',
+    email: data.email || '',
+    company: data.company || '',
+    message: data.message || ''
+  });
 
-  const emailValidation = validateEmail(data.email);
-  if (!emailValidation.isValid) return { valid: false, message: emailValidation.message };
-
-  const messageValidation = validateTextLength(data.message, VALIDATION_CONFIG.message.minLength, 'El mensaje');
-  if (!messageValidation.isValid) return { valid: false, message: messageValidation.message };
-
-  // Verificar longitudes máximas
-  if (data.name.length > VALIDATION_CONFIG.name.maxLength) {
-    return { valid: false, message: `El nombre no puede exceder los ${VALIDATION_CONFIG.name.maxLength} caracteres.` };
-  }
-  if (data.email.length > VALIDATION_CONFIG.email.maxLength) {
-    return { valid: false, message: `El email no puede exceder los ${VALIDATION_CONFIG.email.maxLength} caracteres.` };
-  }
-  if (data.company && data.company.length > VALIDATION_CONFIG.company.maxLength) {
-    return { valid: false, message: `El nombre de la empresa no puede exceder los ${VALIDATION_CONFIG.company.maxLength} caracteres.` };
-  }
-  if (data.message.length > VALIDATION_CONFIG.message.maxLength) {
-    return { valid: false, message: `El mensaje no puede exceder los ${VALIDATION_CONFIG.message.maxLength} caracteres.` };
-  }
-
-  // Verificar contenido peligroso
-  const allFields = [data.name, data.email, data.company || '', data.message].join(' ');
-  if (detectDangerousPatterns(allFields)) {
-    return { valid: false, message: 'Contenido no válido detectado.' };
-  }
-
-  return { valid: true };
+  return {
+    valid: validation.isValid,
+    message: validation.message
+  };
 }
 
 /**
- * Sanitiza los datos de entrada utilizando una función de utilidad
+ * Sanitiza los datos de entrada utilizando el módulo compartido
  */
-function sanitizeData(data: any) {
-  return {
-    name: sanitizeInput(data.name),
-    email: sanitizeInput(data.email),
-    company: data.company ? sanitizeInput(data.company) : '',
-    message: sanitizeInput(data.message)
-  };
+function sanitizeData(data: any): ValidatedFormData {
+  return FormValidator.sanitizeFormData({
+    name: data.name || '',
+    email: data.email || '',
+    company: data.company || '',
+    message: data.message || ''
+  });
 }
 
 export const POST: APIRoute = async ({ request }) => {
