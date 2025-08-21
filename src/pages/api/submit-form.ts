@@ -7,6 +7,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
+import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatterns } from '../../utils/validation';
 
 // Rate limiting simple (en memoria)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -40,49 +41,40 @@ function checkRateLimit(clientIP: string): { allowed: boolean; message?: string 
 }
 
 /**
- * Valida los datos del formulario
+ * Valida los datos del formulario utilizando funciones de utilidad
  */
 function validateFormData(data: any): { valid: boolean; message?: string } {
-  // Verificar campos requeridos
-  if (!data.name || typeof data.name !== 'string' || data.name.trim().length < VALIDATION_CONFIG.name.minLength) {
-    return { valid: false, message: `El nombre es requerido y debe tener al menos ${VALIDATION_CONFIG.name.minLength} caracteres.` };
+  if (!data || typeof data !== 'object') {
+    return { valid: false, message: 'Datos inválidos.' };
   }
 
-  if (!data.email || typeof data.email !== 'string') {
-    return { valid: false, message: 'El email es requerido.' };
-  }
+  // Validaciones de campos
+  const nameValidation = validateTextLength(data.name, VALIDATION_CONFIG.name.minLength, 'El nombre');
+  if (!nameValidation.isValid) return { valid: false, message: nameValidation.message };
 
-  if (!data.message || typeof data.message !== 'string' || data.message.trim().length < VALIDATION_CONFIG.message.minLength) {
-    return { valid: false, message: `El mensaje es requerido y debe tener al menos ${VALIDATION_CONFIG.message.minLength} caracteres.` };
-  }
+  const emailValidation = validateEmail(data.email);
+  if (!emailValidation.isValid) return { valid: false, message: emailValidation.message };
 
-  // Validar formato de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(data.email)) {
-    return { valid: false, message: 'Por favor ingresa un email válido.' };
-  }
+  const messageValidation = validateTextLength(data.message, VALIDATION_CONFIG.message.minLength, 'El mensaje');
+  if (!messageValidation.isValid) return { valid: false, message: messageValidation.message };
 
   // Verificar longitudes máximas
   if (data.name.length > VALIDATION_CONFIG.name.maxLength) {
-    return { valid: false, message: `El nombre no puede exceder ${VALIDATION_CONFIG.name.maxLength} caracteres.` };
+    return { valid: false, message: `El nombre no puede exceder los ${VALIDATION_CONFIG.name.maxLength} caracteres.` };
   }
-
   if (data.email.length > VALIDATION_CONFIG.email.maxLength) {
-    return { valid: false, message: `El email no puede exceder ${VALIDATION_CONFIG.email.maxLength} caracteres.` };
+    return { valid: false, message: `El email no puede exceder los ${VALIDATION_CONFIG.email.maxLength} caracteres.` };
   }
-
   if (data.company && data.company.length > VALIDATION_CONFIG.company.maxLength) {
-    return { valid: false, message: `El nombre de la empresa no puede exceder ${VALIDATION_CONFIG.company.maxLength} caracteres.` };
+    return { valid: false, message: `El nombre de la empresa no puede exceder los ${VALIDATION_CONFIG.company.maxLength} caracteres.` };
   }
-
   if (data.message.length > VALIDATION_CONFIG.message.maxLength) {
-    return { valid: false, message: `El mensaje no puede exceder ${VALIDATION_CONFIG.message.maxLength} caracteres.` };
+    return { valid: false, message: `El mensaje no puede exceder los ${VALIDATION_CONFIG.message.maxLength} caracteres.` };
   }
 
   // Verificar contenido peligroso
-  const dangerousPatterns = /<script|javascript:|on\w+=/i;
   const allFields = [data.name, data.email, data.company || '', data.message].join(' ');
-  if (dangerousPatterns.test(allFields)) {
+  if (detectDangerousPatterns(allFields)) {
     return { valid: false, message: 'Contenido no válido detectado.' };
   }
 
@@ -90,25 +82,14 @@ function validateFormData(data: any): { valid: boolean; message?: string } {
 }
 
 /**
- * Sanitiza los datos de entrada
+ * Sanitiza los datos de entrada utilizando una función de utilidad
  */
 function sanitizeData(data: any) {
-  const sanitize = (str: string) => {
-    if (typeof str !== 'string') return str;
-    return str
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
-      .trim();
-  };
-
   return {
-    name: sanitize(data.name),
-    email: sanitize(data.email),
-    company: data.company ? sanitize(data.company) : '',
-    message: sanitize(data.message)
+    name: sanitizeInput(data.name),
+    email: sanitizeInput(data.email),
+    company: data.company ? sanitizeInput(data.company) : '',
+    message: sanitizeInput(data.message)
   };
 }
 
@@ -131,7 +112,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: 429,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://www.jeroologic.com',
             'Access-Control-Allow-Methods': 'POST',
             'Access-Control-Allow-Headers': 'Content-Type'
           }
@@ -151,7 +132,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: 400,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': 'https://www.jeroologic.com'
           }
         }
       );
@@ -171,7 +152,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: 400,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': 'https://www.jeroologic.com'
           }
         }
       );
@@ -189,7 +170,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: 400,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': 'https://www.jeroologic.com'
           }
         }
       );
@@ -222,7 +203,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: result.success ? 200 : 400,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': 'https://www.jeroologic.com',
           'Access-Control-Allow-Methods': 'POST',
           'Access-Control-Allow-Headers': 'Content-Type'
         }
@@ -241,7 +222,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': 'https://www.jeroologic.com'
         }
       }
     );
@@ -253,7 +234,7 @@ export const OPTIONS: APIRoute = async () => {
   return new Response(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': 'https://www.jeroologic.com',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
       'Access-Control-Max-Age': '86400'
