@@ -3,6 +3,7 @@
  */
 class FormManager {
   constructor() {
+    this.lastSubmitTime = null;
     this.init();
   }
 
@@ -31,6 +32,13 @@ class FormManager {
    * @param {HTMLFormElement} form - El formulario a procesar
    */
   async handleFormSubmission(form) {
+    // Prevenir envíos muy rápidos (anti-spam básico)
+    const now = Date.now();
+    if (this.lastSubmitTime && (now - this.lastSubmitTime) < 3000) {
+      this.showNotification('Por favor espera un momento antes de enviar otro mensaje.', 'warning');
+      return;
+    }
+    this.lastSubmitTime = now;
     const submitButton = form.querySelector('button[type="submit"]');
     if (!submitButton) return;
 
@@ -46,9 +54,10 @@ class FormManager {
       return;
     }
 
-    // Show loading state
+    // Show enhanced loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando mensaje...';
+    submitButton.classList.add('opacity-75', 'cursor-not-allowed');
 
     try {
       const response = await fetch('/api/submit-form', {
@@ -63,11 +72,17 @@ class FormManager {
       const result = await response.json();
 
       if (response.ok) {
-        this.showNotification(
-          result.message || `¡Gracias ${formData.name}! Tu mensaje ha sido enviado.`,
-          'success'
-        );
+        // Mensaje de éxito personalizado y claro
+        const successMessage = result.message || 
+          `¡Perfecto, ${formData.name}! Tu mensaje ha sido enviado exitosamente.`;
+        
+        this.showNotification(successMessage, 'success');
+        
+        // Reset form after showing success message
         form.reset();
+        
+        // Optional: Scroll to top to ensure user sees the notification
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         this.showNotification(
           `Error: ${result.message || 'No se pudo enviar el mensaje.'}`,
@@ -78,8 +93,12 @@ class FormManager {
       console.error('Error al enviar el formulario:', error);
       this.handleNetworkError(error);
     } finally {
-      submitButton.disabled = false;
-      submitButton.innerHTML = originalButtonText;
+      // Reset button state with smooth transition
+      setTimeout(() => {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+        submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+      }, 500); // Small delay to show success state
     }
   }
 
@@ -206,35 +225,55 @@ class FormManager {
   }
 
   /**
-   * Muestra notificaciones toast con diferentes tipos y animaciones
+   * Muestra notificaciones toast mejoradas con diferentes tipos y animaciones
    * @param {string} message - El mensaje a mostrar
    * @param {string} type - Tipo de notificación: 'info', 'success', 'error', 'warning'
    */
   showNotification(message, type = 'info') {
     // Remove existing notifications
     const existingNotifications = document.querySelectorAll('.notification');
-    existingNotifications.forEach(notification => notification.remove());
+    existingNotifications.forEach(notification => {
+      notification.classList.add('fade-out');
+      setTimeout(() => notification.remove(), 300);
+    });
 
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification fixed top-4 left-1/2 transform -translate-x-1/2 z-[999] p-4 rounded-lg shadow-lg max-w-sm opacity-100 bg-red-500 text-white`;
+    notification.className = `notification ${type}`;
     
-    // Set notification style based on type
+    // Set notification properties based on type
+    let icon, duration;
     switch (type) {
       case 'success':
-        notification.classList.add('bg-green-500', 'text-gray-900');
+        icon = 'fas fa-check-circle';
+        duration = 7000;
         break;
       case 'error':
-        notification.classList.add('bg-red-500', 'text-gray-900');
+        icon = 'fas fa-exclamation-circle';
+        duration = 8000;
+        break;
+      case 'warning':
+        icon = 'fas fa-exclamation-triangle';
+        duration = 6000;
         break;
       default:
-        notification.classList.add('bg-blue-500', 'text-gray-900');
+        icon = 'fas fa-info-circle';
+        duration = 5000;
     }
 
     notification.innerHTML = `
-      <div class="flex items-center justify-between">
-        <span>${message}</span>
-        <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="flex-shrink: 0;">
+          <i class="${icon}" style="font-size: 18px;"></i>
+        </div>
+        <div style="flex: 1;">
+          <p style="font-weight: 500; margin: 0; line-height: 1.4;">${message}</p>
+          ${type === 'success' ? '<p style="font-size: 14px; opacity: 0.9; margin: 4px 0 0 0; line-height: 1.3;">Nos pondremos en contacto contigo pronto.</p>' : ''}
+        </div>
+        <button style="flex-shrink: 0; background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 8px; opacity: 0.8; transition: opacity 0.2s;" 
+                onmouseover="this.style.opacity='0.6'" 
+                onmouseout="this.style.opacity='0.8'"
+                onclick="this.closest('.notification').classList.add('fade-out'); setTimeout(() => this.closest('.notification')?.remove(), 300)">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -242,18 +281,36 @@ class FormManager {
 
     document.body.appendChild(notification);
 
-    // Animate in
-    setTimeout(() => {
-      notification.classList.add('opacity-100');
-    }, 100);
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
+    // Auto remove after specified duration
+    const autoRemoveTimeout = setTimeout(() => {
       if (notification.parentElement) {
-        notification.classList.remove('opacity-100'); // Fade out
-        setTimeout(() => notification.remove(), 300);
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
       }
-    }, 5000);
+    }, duration);
+
+    // Clear timeout if user manually closes
+    notification.addEventListener('click', (e) => {
+      if (e.target.closest('button')) {
+        clearTimeout(autoRemoveTimeout);
+      }
+    });
+
+    // Add sound notification for success (optional)
+    if (type === 'success' && 'speechSynthesis' in window) {
+      try {
+        const utterance = new SpeechSynthesisUtterance('Mensaje enviado');
+        utterance.volume = 0.1;
+        utterance.rate = 1.5;
+        speechSynthesis.speak(utterance);
+      } catch (e) {
+        // Ignore speech synthesis errors
+      }
+    }
   }
 }
 

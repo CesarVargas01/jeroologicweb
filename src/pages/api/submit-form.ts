@@ -214,10 +214,21 @@ export const POST: APIRoute = async ({ request }) => {
 
     const result = await response.json();
 
+    // Crear mensaje personalizado de éxito
+    const successMessage = result.success 
+      ? `¡Hola ${sanitizedData.name}! Tu mensaje ha sido recibido correctamente. Te contactaremos pronto.`
+      : result.message || 'Error al procesar tu mensaje.';
+
     return new Response(
       JSON.stringify({
         success: result.success,
-        message: result.message || '¡Mensaje enviado correctamente!'
+        message: successMessage,
+        timestamp: new Date().toISOString(),
+        data: {
+          name: sanitizedData.name,
+          email: sanitizedData.email,
+          company: sanitizedData.company
+        }
       }),
       {
         status: result.success ? 200 : 400,
