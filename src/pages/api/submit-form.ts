@@ -8,7 +8,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
 import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatterns } from '../../utils/validation';
-import { createClient } from '@vercel/kv';
+import Redis from 'ioredis';
 
 // Inicialización del cliente Vercel KV para rate limiting persistente
 if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
@@ -18,7 +18,7 @@ if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
   // pero el endpoint fallará con un mensaje claro.
 }
 
-const kv = createClient("rediss://default:AcU5AAIncDFjZjNmMjIxMTQ3MTI0YjAxYjU3NzQyZmE4Y2U2OTgzN3AxNTA0ODk@native-feline-50489.upstash.io:6379");
+const kv = new Redis(process.env.KV_URL as string);
 
 /**
  * Implementa rate limiting persistente por IP usando Vercel KV
