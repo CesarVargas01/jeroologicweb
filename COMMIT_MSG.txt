@@ -1,0 +1,7 @@
+feat: Configure Astro for Vercel deployment and server-side rendering
+
+This commit configures the Astro project for deployment to Vercel and enables server-side rendering for API routes.
+
+- Installs and integrates the `@astrojs/vercel` adapter.
+- Sets the `output` mode to `server` in `astro.config.mjs`.
+- Updates `package.json` and `package-lock.json` to reflect new dependency.
