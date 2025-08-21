@@ -4,7 +4,7 @@
 
 // URL de Google Apps Script Web App
 // IMPORTANTE: Reemplaza esta URL con la tuya después de desplegar el script
-export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
+export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby90rr4ucKj7CoxKUu0OdTXh0nVXGfTD3trZGKoQg0PapzyRjpXaOT_yuilXO58iFSEGQ/exec';
 
 // Configuración de rate limiting
 export const RATE_LIMIT_CONFIG = {

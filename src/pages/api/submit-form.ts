@@ -3,6 +3,8 @@
  * Reenvía los datos a Google Apps Script para guardar en Google Sheets
  */
 
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
 

@@ -47,7 +47,7 @@ Esta guía te ayudará a configurar la integración completa entre tu formulario
 2. **Obtener URL:**
    - Clic en "Desplegar"
    - **IMPORTANTE:** Copia la URL de la aplicación web
-   - Se verá algo como: `https://script.google.com/macros/s/ABC123.../exec`
+   - Se verá algo como: `https://script.google.com/macros/s/ABC123.../exec          https://script.google.com/macros/s/AKfycby90rr4ucKj7CoxKUu0OdTXh0nVXGfTD3trZGKoQg0PapzyRjpXaOT_yuilXO58iFSEGQ/exec `
 
 ### 4. Configurar el proyecto Astro
 
