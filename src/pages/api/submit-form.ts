@@ -8,35 +8,38 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
 import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatterns } from '../../utils/validation';
+import { createClient } from '@vercel/kv';
 
-// Rate limiting simple (en memoria)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+// Inicialización del cliente Vercel KV para rate limiting persistente
+const kv = createClient({
+  url: process.env.KV_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 /**
- * Implementa rate limiting básico por IP
+ * Implementa rate limiting persistente por IP usando Vercel KV
  */
-function checkRateLimit(clientIP: string): { allowed: boolean; message?: string } {
-  const now = Date.now();
-  const clientData = rateLimitMap.get(clientIP);
+async function checkRateLimit(clientIP: string): Promise<{ allowed: boolean; message?: string }> {
+  const key = `ratelimit:${clientIP}`;
+  const windowMs = RATE_LIMIT_CONFIG.windowMs; // Ventana en milisegundos
+  const maxRequests = RATE_LIMIT_CONFIG.maxRequests; // Máximo de peticiones
 
-  if (!clientData || now > clientData.resetTime) {
-    // Primera request o ventana expirada
-    rateLimitMap.set(clientIP, {
-      count: 1,
-      resetTime: now + RATE_LIMIT_CONFIG.windowMs
-    });
-    return { allowed: true };
+  // Incrementar el contador para la IP
+  const currentCount = await kv.incr(key);
+
+  // Si es la primera petición en la ventana, establecer la expiración
+  if (currentCount === 1) {
+    await kv.pexpire(key, windowMs); // pexpire usa milisegundos
   }
 
-  if (clientData.count >= RATE_LIMIT_CONFIG.maxRequests) {
+  // Verificar si se ha excedido el límite
+  if (currentCount > maxRequests) {
     return {
       allowed: false,
-      message: 'Demasiadas solicitudes. Inténtalo de nuevo en 15 minutos.'
+      message: `Demasiadas solicitudes. Inténtalo de nuevo en ${Math.ceil(windowMs / 60000)} minutos.`
     };
   }
 
-  // Incrementar contador
-  clientData.count++;
   return { allowed: true };
 }
 
@@ -101,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
                     'unknown';
 
     // Verificar rate limiting
-    const rateLimitCheck = checkRateLimit(clientIP);
+    const rateLimitCheck = await checkRateLimit(clientIP);
     if (!rateLimitCheck.allowed) {
       return new Response(
         JSON.stringify({
