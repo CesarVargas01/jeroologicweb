@@ -8,42 +8,74 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
 import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatterns } from '../../utils/validation';
-import Redis from 'ioredis';
+import { kv } from '@vercel/kv';
 
-// Inicialización del cliente Vercel KV para rate limiting persistente
-if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
-  // Log a más descriptivo en el servidor
-  console.error("Error: Missing Vercel KV environment variables. Check Vercel project settings.");
-  // No lances un error aquí para que el resto de la app (si aplica) pueda funcionar,
-  // pero el endpoint fallará con un mensaje claro.
+// Verificar variables de entorno de Vercel KV
+if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+  console.error("Warning: Missing Vercel KV environment variables. Rate limiting will use fallback.");
 }
 
-const kv = new Redis(process.env.KV_URL as string);
+// Fallback en memoria para rate limiting cuando KV no está disponible
+const memoryStore = new Map<string, { count: number; resetTime: number }>();
 
 /**
- * Implementa rate limiting persistente por IP usando Vercel KV
+ * Implementa rate limiting con Vercel KV y fallback en memoria
  */
 async function checkRateLimit(clientIP: string): Promise<{ allowed: boolean; message?: string }> {
   const key = `ratelimit:${clientIP}`;
-  const windowMs = RATE_LIMIT_CONFIG.windowMs; // Ventana en milisegundos
-  const maxRequests = RATE_LIMIT_CONFIG.maxRequests; // Máximo de peticiones
+  const windowMs = RATE_LIMIT_CONFIG.windowMs;
+  const maxRequests = RATE_LIMIT_CONFIG.maxRequests;
 
-  // Incrementar el contador para la IP
-  const currentCount = await kv.incr(key);
+  try {
+    // Intentar usar Vercel KV primero
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const currentCount = await kv.incr(key);
+      
+      // Si es la primera petición en la ventana, establecer la expiración
+      if (currentCount === 1) {
+        await kv.expire(key, Math.ceil(windowMs / 1000)); // expire usa segundos
+      }
 
-  // Si es la primera petición en la ventana, establecer la expiración
-  if (currentCount === 1) {
-    await kv.pexpire(key, windowMs); // pexpire usa milisegundos
+      if (currentCount > maxRequests) {
+        return {
+          allowed: false,
+          message: `Demasiadas solicitudes. Inténtalo de nuevo en ${Math.ceil(windowMs / 60000)} minutos.`
+        };
+      }
+
+      return { allowed: true };
+    } else {
+      // Fallback a memoria local
+      return checkRateLimitMemory(clientIP, windowMs, maxRequests);
+    }
+  } catch (error) {
+    console.warn('Vercel KV error, using memory fallback:', error);
+    return checkRateLimitMemory(clientIP, windowMs, maxRequests);
+  }
+}
+
+/**
+ * Rate limiting en memoria como fallback
+ */
+function checkRateLimitMemory(clientIP: string, windowMs: number, maxRequests: number): { allowed: boolean; message?: string } {
+  const now = Date.now();
+  const record = memoryStore.get(clientIP);
+
+  if (!record || now > record.resetTime) {
+    // Nueva ventana o primera petición
+    memoryStore.set(clientIP, { count: 1, resetTime: now + windowMs });
+    return { allowed: true };
   }
 
-  // Verificar si se ha excedido el límite
-  if (currentCount > maxRequests) {
+  if (record.count >= maxRequests) {
     return {
       allowed: false,
-      message: `Demasiadas solicitudes. Inténtalo de nuevo en ${Math.ceil(windowMs / 60000)} minutos.`
+      message: `Demasiadas solicitudes. Inténtalo de nuevo en ${Math.ceil((record.resetTime - now) / 60000)} minutos.`
     };
   }
 
+  // Incrementar contador
+  record.count++;
   return { allowed: true };
 }
 
@@ -146,7 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Parsear datos JSON
-    let formData;
+    let formData: any;
     try {
       formData = await request.json();
     } catch (error) {

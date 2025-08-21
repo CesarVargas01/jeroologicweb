@@ -1,10 +1,10 @@
 ---
+export const prerender = true; // Página estática
+
 import Layout from '../layouts/Layout.astro';
-import { Icon } from 'astro-icon/components';
 import ServiceCard from '../components/ServiceCard.astro';
 import TechnologyLogo from '../components/TechnologyLogo.astro';
 import AdvantageCard from '../components/AdvantageCard.astro';
-import Footer from '../components/Footer.astro';
 
 const services = [
   { icon: 'mdi:robot', title: 'Automatizaciones', description: 'Automatizamos tus procesos con herramientas como n8n y Make, reduciendo tiempos y errores.' },

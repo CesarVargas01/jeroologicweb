@@ -202,7 +202,7 @@ class FormManager {
 
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification fixed top-4 left-1/2 transform -translate-x-1/2 z-[999] p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 opacity-0`;
+    notification.className = `notification fixed top-4 left-1/2 transform -translate-x-1/2 z-[999] p-4 rounded-lg shadow-lg max-w-sm opacity-100 bg-red-500 text-white`;
     
     // Set notification style based on type
     switch (type) {
