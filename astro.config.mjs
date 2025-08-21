@@ -2,9 +2,11 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import icon from "astro-icon";
 import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
+  output: 'server',
   site: 'https://www.jerroologic.com',
   integrations: [
     tailwind(), 
@@ -13,7 +15,8 @@ export default defineConfig({
       changefreq: 'weekly',
       priority: 0.7,
       lastmod: new Date(),
-    })
+    }),
+    vercel()
   ],
   vite: {
     define: {
