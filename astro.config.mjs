@@ -7,6 +7,7 @@ import vercel from '@astrojs/vercel';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
+  adapter: vercel(),
   site: 'https://www.jerroologic.com',
   integrations: [
     tailwind(), 
@@ -15,8 +16,7 @@ export default defineConfig({
       changefreq: 'weekly',
       priority: 0.7,
       lastmod: new Date(),
-    }),
-    vercel()
+    })
   ],
   vite: {
     define: {
