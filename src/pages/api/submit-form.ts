@@ -11,9 +11,16 @@ import { validateEmail, validateTextLength, sanitizeInput, detectDangerousPatter
 import { createClient } from '@vercel/kv';
 
 // Inicialización del cliente Vercel KV para rate limiting persistente
+if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
+  // Log a más descriptivo en el servidor
+  console.error("Error: Missing Vercel KV environment variables. Check Vercel project settings.");
+  // No lances un error aquí para que el resto de la app (si aplica) pueda funcionar,
+  // pero el endpoint fallará con un mensaje claro.
+}
+
 const kv = createClient({
-  url: process.env.KV_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.KV_URL as string,
+  token: process.env.KV_REST_API_TOKEN as string,
 });
 
 /**
