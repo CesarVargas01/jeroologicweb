@@ -1,5 +1,30 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+const projects = [
+  {
+    imgSrc: "/images/SistemadeAutomatizaciónComercial.webp",
+    imgAlt: "Proyecto Automatización",
+    title: "Sistema de Automatización Comercial",
+    description: "Plataforma que automatiza procesos de ventas y gestión de clientes para una empresa de retail.",
+    tags: ["n8n", "PostgreSQL", "React"],
+  },
+  {
+    imgSrc: "/images/PlataformaeCommerce.webp",
+    imgAlt: "Proyecto eCommerce",
+    title: "Plataforma eCommerce",
+    description: "Tienda online escalable con gestión de inventario, pagos y envíos automatizados.",
+    tags: ["WooCommerce", "WordPress", "MySQL"],
+  },
+  {
+    imgSrc: "/images/MigraciondeBasedeDatos.webp",
+    imgAlt: "Proyecto Base de Datos",
+    title: "Migración de Base de Datos",
+    description: "Migración y optimización de base de datos para una institución educativa.",
+    tags: ["MySQL", "MongoDB", "Python"],
+  },
+];
 ---
 
 <Layout title="Recursos - Jeroo Logic" description="Descubre los proyectos recientes de Jeroo Logic: sistemas de automatización, plataformas eCommerce y migraciones de bases de datos. Conoce nuestras soluciones tecnológicas.">
@@ -14,63 +39,15 @@ import Layout from '../layouts/Layout.astro';
         <p class="text-gray dark:text-light-gray max-w-3xl mt-5 mx-auto">Algunos de nuestros trabajos realizados con soluciones tecnológicas.</p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <img
-        src="/images/SistemadeAutomatizaciónComercial.webp"
-              alt="Proyecto Automatización"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          </div>
-          <div class="p-8">
-            <h3 class="mb-2.5 dark:text-light">Sistema de Automatización Comercial</h3>
-            <p class="text-gray dark:text-light-gray mb-4">Plataforma que automatiza procesos de ventas y gestión de clientes para una empresa de retail.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">n8n</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">PostgreSQL</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">React</span>
-            </div>
-            <a href="https://wa.me/573208718037" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg btn-outline" target="_blank">Contáctanos</a>
-          </div>
-        </div>
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <img
-             src="/images/PlataformaeCommerce.webp"
-              alt="Proyecto eCommerce"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          </div>
-          <div class="p-8">
-            <h3 class="dark:text-light">Plataforma eCommerce</h3>
-            <p class="text-gray dark:text-light-gray mb-4">Tienda online escalable con gestión de inventario, pagos y envíos automatizados.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">WooCommerce</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">WordPress</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">MySQL</span>
-            </div>
-            <a href="https://wa.me/573208718037" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg btn-outline" target="_blank">Contáctanos</a>
-          </div>
-        </div>
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <img
-                src="/images/MigraciondeBasedeDatos.webp"
-              alt="Proyecto Base de Datos"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          </div>
-          <div class="p-8">
-            <h3 class="dark:text-light">Migración de Base de Datos</h3>
-            <p class="text-gray dark:text-light-gray mb-4">Migración y optimización de base de datos para una institución educativa.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">MySQL</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">MongoDB</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">Python</span>
-            </div>
-            <a href="https://wa.me/573208718037" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg btn-outline" target="_blank">Contáctanos</a>
-          </div>
-        </div>
+        {projects.map(project => (
+          <ProjectCard
+            imgSrc={project.imgSrc}
+            imgAlt={project.imgAlt}
+            title={project.title}
+            description={project.description}
+            tags={project.tags}
+          />
+        ))}
       </div>
     </section>
 

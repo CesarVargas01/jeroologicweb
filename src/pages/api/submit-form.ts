@@ -1,116 +1,260 @@
+/**
+ * API endpoint para manejar el envío del formulario de contacto
+ * Reenvía los datos a Google Apps Script para guardar en Google Sheets
+ */
+
 import type { APIRoute } from 'astro';
-import { google } from 'googleapis';
+import { GOOGLE_SCRIPT_URL, RATE_LIMIT_CONFIG, VALIDATION_CONFIG } from '../../config/api';
 
-// --- Configuración de Seguridad y Entorno ---
-
-// Carga las credenciales de forma segura desde variables de entorno.
-// ¡NUNCA expongas estas claves en el código del lado del cliente!
-const GOOGLE_SERVICE_ACCOUNT_KEY = JSON.parse(import.meta.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}');
-const SPREADSHEET_ID = import.meta.env.SPREADSHEET_ID; // Carga el ID de la hoja desde variables de entorno
-const SHEET_NAME = import.meta.env.SHEET_NAME || 'contactos'; // Nombre de la hoja, con un valor por defecto
-
-// --- Utilidades de Seguridad ---
+// Rate limiting simple (en memoria)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 /**
- * Sanitiza el texto para prevenir ataques de XSS y Formula Injection en Google Sheets.
- * - Escapa caracteres que podrían iniciar una fórmula (=, +, -, @).
- * - Reemplaza caracteres HTML para prevenir XSS.
- * @param text El texto a sanitizar.
- * @returns El texto sanitizado.
+ * Implementa rate limiting básico por IP
  */
-const sanitizeInput = (text: string): string => {
-  if (!text) return '';
-  let sanitizedText = text;
-  // Previene Formula Injection
-  if (['=', '+', '-', '@'].includes(sanitizedText.charAt(0))) {
-    sanitizedText = `'` + sanitizedText;
+function checkRateLimit(clientIP: string): { allowed: boolean; message?: string } {
+  const now = Date.now();
+  const clientData = rateLimitMap.get(clientIP);
+
+  if (!clientData || now > clientData.resetTime) {
+    // Primera request o ventana expirada
+    rateLimitMap.set(clientIP, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_CONFIG.windowMs
+    });
+    return { allowed: true };
   }
-  // Previene XSS básico
-  const htmlEntities: { [key: string]: string } = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&': '&amp;',
-    '"': '&quot;',
-    '\'': '&#39;',
-    '/': '&#x2F;'
-  };
-  return sanitizedText.replace(/[<>&"'\/]/g, char => htmlEntities[char]);
-};
+
+  if (clientData.count >= RATE_LIMIT_CONFIG.maxRequests) {
+    return {
+      allowed: false,
+      message: 'Demasiadas solicitudes. Inténtalo de nuevo en 15 minutos.'
+    };
+  }
+
+  // Incrementar contador
+  clientData.count++;
+  return { allowed: true };
+}
 
 /**
- * Valida si una cadena de texto es un email válido.
- * @param email El email a validar.
- * @returns `true` si el email es válido, de lo contrario `false`.
+ * Valida los datos del formulario
  */
-const isValidEmail = (email: string): boolean => {
-  if (!email) return false;
-  const emailRegex = /^[^S@]+@[^S@]+\.[^S@]+$/;
-  return emailRegex.test(email);
-};
+function validateFormData(data: any): { valid: boolean; message?: string } {
+  // Verificar campos requeridos
+  if (!data.name || typeof data.name !== 'string' || data.name.trim().length < VALIDATION_CONFIG.name.minLength) {
+    return { valid: false, message: `El nombre es requerido y debe tener al menos ${VALIDATION_CONFIG.name.minLength} caracteres.` };
+  }
 
+  if (!data.email || typeof data.email !== 'string') {
+    return { valid: false, message: 'El email es requerido.' };
+  }
 
-// --- Endpoint de la API ---
+  if (!data.message || typeof data.message !== 'string' || data.message.trim().length < VALIDATION_CONFIG.message.minLength) {
+    return { valid: false, message: `El mensaje es requerido y debe tener al menos ${VALIDATION_CONFIG.message.minLength} caracteres.` };
+  }
+
+  // Validar formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(data.email)) {
+    return { valid: false, message: 'Por favor ingresa un email válido.' };
+  }
+
+  // Verificar longitudes máximas
+  if (data.name.length > VALIDATION_CONFIG.name.maxLength) {
+    return { valid: false, message: `El nombre no puede exceder ${VALIDATION_CONFIG.name.maxLength} caracteres.` };
+  }
+
+  if (data.email.length > VALIDATION_CONFIG.email.maxLength) {
+    return { valid: false, message: `El email no puede exceder ${VALIDATION_CONFIG.email.maxLength} caracteres.` };
+  }
+
+  if (data.company && data.company.length > VALIDATION_CONFIG.company.maxLength) {
+    return { valid: false, message: `El nombre de la empresa no puede exceder ${VALIDATION_CONFIG.company.maxLength} caracteres.` };
+  }
+
+  if (data.message.length > VALIDATION_CONFIG.message.maxLength) {
+    return { valid: false, message: `El mensaje no puede exceder ${VALIDATION_CONFIG.message.maxLength} caracteres.` };
+  }
+
+  // Verificar contenido peligroso
+  const dangerousPatterns = /<script|javascript:|on\w+=/i;
+  const allFields = [data.name, data.email, data.company || '', data.message].join(' ');
+  if (dangerousPatterns.test(allFields)) {
+    return { valid: false, message: 'Contenido no válido detectado.' };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Sanitiza los datos de entrada
+ */
+function sanitizeData(data: any) {
+  const sanitize = (str: string) => {
+    if (typeof str !== 'string') return str;
+    return str
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;')
+      .trim();
+  };
+
+  return {
+    name: sanitize(data.name),
+    email: sanitize(data.email),
+    company: data.company ? sanitize(data.company) : '',
+    message: sanitize(data.message)
+  };
+}
 
 export const POST: APIRoute = async ({ request }) => {
-  // 1. Validación de la solicitud
-  if (request.headers.get("Content-Type") !== "application/json") {
-    return new Response(JSON.stringify({ message: 'Tipo de contenido no permitido.' }), { status: 415 });
-  }
-
   try {
-    const body = await request.json();
+    // Obtener IP del cliente para rate limiting
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    'unknown';
 
-    // 2. Validación de Datos (Presencia, Formato y Longitud)
-    const { name, email, company, message } = body;
+    // Verificar rate limiting
+    const rateLimitCheck = checkRateLimit(clientIP);
+    if (!rateLimitCheck.allowed) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: rateLimitCheck.message
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          }
+        }
+      );
+    }
 
-    if (!name || !email || !message) {
-      return new Response(JSON.stringify({ message: 'Nombre, email y mensaje son campos requeridos.' }), { status: 400 });
-    }
-    if (!isValidEmail(email)) {
-      return new Response(JSON.stringify({ message: 'El formato del email no es válido.' }), { status: 400 });
-    }
-    if (name.length > 100 || email.length > 100 || message.length > 5000 || (company && company.length > 100)) {
-        return new Response(JSON.stringify({ message: 'Uno de los campos excede la longitud máxima permitida.' }), { status: 400 });
+    // Verificar Content-Type
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Content-Type debe ser application/json'
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      );
     }
 
-    // 3. Sanitización de Entradas
-    const sanitizedName = sanitizeInput(name);
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedCompany = company ? sanitizeInput(company) : '';
-    const sanitizedMessage = sanitizeInput(message);
-
-    // 4. Autenticación y Conexión con Google Sheets
-    if (!SPREADSHEET_ID || !GOOGLE_SERVICE_ACCOUNT_KEY.client_email) {
-        console.error("Error: Las variables de entorno para Google Sheets no están configuradas.");
-        return new Response(JSON.stringify({ message: 'Error de configuración del servidor.' }), { status: 500 });
+    // Parsear datos JSON
+    let formData;
+    try {
+      formData = await request.json();
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Datos JSON inválidos'
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      );
     }
-    
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: GOOGLE_SERVICE_ACCOUNT_KEY.client_email,
-        private_key: GOOGLE_SERVICE_ACCOUNT_KEY.private_key.replace(/\\n/g, '\n'), // Asegura el formato correcto de la clave
+
+    // Validar datos
+    const validation = validateFormData(formData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: validation.message
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      );
+    }
+
+    // Sanitizar datos
+    const sanitizedData = sanitizeData(formData);
+
+    // Enviar a Google Apps Script
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      body: JSON.stringify(sanitizedData)
     });
 
-    const sheets = google.sheets({ version: 'v4', auth });
+    if (!response.ok) {
+      throw new Error(`Google Script respondió con status: ${response.status}`);
+    }
 
-    // 5. Escritura en la Hoja de Cálculo
-    const timestamp = new Date().toISOString();
-    const values = [[timestamp, sanitizedName, sanitizedEmail, sanitizedCompany, sanitizedMessage]];
+    const result = await response.json();
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:E`,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values },
-    });
-
-    return new Response(JSON.stringify({ message: 'Mensaje enviado con éxito.' }), { status: 200 });
+    return new Response(
+      JSON.stringify({
+        success: result.success,
+        message: result.message || '¡Mensaje enviado correctamente!'
+      }),
+      {
+        status: result.success ? 200 : 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      }
+    );
 
   } catch (error) {
-    console.error('Error al procesar el formulario:', error);
-    // Evita exponer detalles del error al cliente
-    return new Response(JSON.stringify({ message: 'Error interno del servidor al procesar la solicitud.' }), { status: 500 });
+    console.error('Error en submit-form API:', error);
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Error interno del servidor. Por favor, inténtalo de nuevo.'
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
   }
+};
+
+// Manejar preflight requests para CORS
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
 };

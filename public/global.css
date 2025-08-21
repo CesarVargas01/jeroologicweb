@@ -1,27 +1,39 @@
-:root {
-    --primary: #223e7c;
-    --secondary: #3f4040;
-    --color-whatsapp: #25D366;
-    --color-telegram: #0088CC;
-    --light: #f8fafc;
-    --dark: #1e293b;
-    --gray: #64748b;
-    --light-gray: #e2e8f0;
+/*
+  CSS Grid Layout
+  This is a robust way to structure the main page layout.
+*/
+body {
+    display: grid;
+    grid-template-rows: auto 1fr auto; /* Header, Main (stretches), Footer */
+    grid-template-areas:
+        "header"
+        "main"
+        "footer";
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    background-color: #f8fafc;
+    overflow-x: hidden;
 }
 
+header {
+    grid-area: header;
+}
+
+main {
+    grid-area: main;
+}
+
+footer {
+    grid-area: footer;
+}
+
+/* General Styles */
 * {
-    margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    color: var(--dark);
-    line-height: 1.6;
-    background-color: var(--light);
-    overflow-x: hidden;
-    position: relative;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -29,14 +41,14 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
-/* WhatsApp Button */
+/* Floating Action Buttons (remain fixed) */
 .whatsapp-btn {
     position: fixed;
     bottom: 30px;
     right: 30px;
     width: 60px;
     height: 60px;
-    background-color: var(--color-whatsapp);
+    background-color: #25D366;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -45,7 +57,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1000;
     transition: all 0.3s;
     animation: pulse 2s infinite;
-    text-decoration: none; /* Added to remove underline */
+    text-decoration: none;
 }
 
 .whatsapp-btn:hover {
@@ -64,14 +76,13 @@ h1, h2, h3, h4, h5, h6 {
     100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
 }
 
-/* Scroll to Top Button */
 #scrollToTopBtn {
     position: fixed;
-    bottom: 100px; /* Ajusta esta valor para que no se superponga con el botón de WhatsApp */
+    bottom: 100px;
     right: 30px;
     width: 50px;
     height: 50px;
-    background-color: var(--primary);
+    background-color: #223e7c;
     color: white;
     border: none;
     border-radius: 50%;
@@ -94,15 +105,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #scrollToTopBtn:hover {
-    background-color: var(--secondary);
+    background-color: #3f4040;
     transform: translateY(-5px);
 }
 
 #scrollToTopBtn i {
     font-size: 24px;
-}
-
-
-main {
-    padding-top: 80px; /* Ajusta esto según la altura real de tu header */
 }

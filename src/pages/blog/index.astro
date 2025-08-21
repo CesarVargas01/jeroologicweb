@@ -1,5 +1,33 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import GridCard from '../../components/GridCard.astro';
+
+const posts = [
+  {
+    href: "/blog/automatizacion-procesos-n8n-make",
+    imgSrc: "/images/n8nmake.webp",
+    imgAlt: "Automatización de Procesos con n8n y Make",
+    title: "Automatización de Procesos con n8n y Make",
+    description: "Descubre cómo la automatización puede transformar tus procesos, reduciendo tiempos y errores.",
+    tags: ["Automatización", "n8n", "Make"],
+  },
+  {
+    href: "/blog/bases-de-datos-eficientes",
+    imgSrc: "/images/BasesdeDatos.webp",
+    imgAlt: "Bases de Datos Eficientes",
+    title: "Bases de Datos Eficientes para tu Negocio",
+    description: "La importancia de un diseño de bases de datos eficiente para gestionar tu información crítica.",
+    tags: ["Bases de Datos", "Optimización", "Datos"],
+  },
+  {
+    href: "/blog/desarrollo-web-a-medida",
+    imgSrc: "/images/DesarrolloWeb.webp",
+    imgAlt: "Desarrollo Web a Medida",
+    title: "Desarrollo Web a Medida: Experiencias Únicas",
+    description: "Creando sitios y aplicaciones únicas, adaptadas a tus necesidades con tecnologías modernas.",
+    tags: ["Desarrollo Web", "Diseño Web"],
+  },
+];
 ---
 
 <Layout title="Blog - Jeroo Logic" description="Explora el blog de Jeroo Logic con artículos sobre automatización de procesos con n8n y Make, bases de datos eficientes y desarrollo web a medida. Mantente al día con las últimas tendencias tecnológicas.">
@@ -14,71 +42,16 @@ import Layout from '../../layouts/Layout.astro';
         <p class="text-gray dark:text-light-gray max-w-3xl mt-5 mx-auto">Explora nuestros artículos sobre tecnología, automatización y desarrollo.</p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Post 1 -->
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <a href="/blog/automatizacion-procesos-n8n-make">
-              <img
-                src="/images/n8nmake.webp"
-                alt="Automatización de Procesos con n8n y Make"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </a>
-          </div>
-          <div class="p-8">
-            <h3 class="mb-2.5 text-xl text-dark dark:text-light">Automatización de Procesos con n8n y Make</h3>
-            <p class="text-gray dark:text-light-gray mb-4">Descubre cómo la automatización puede transformar tus procesos, reduciendo tiempos y errores.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4 justify-center">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Automatización</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">n8n</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Make</span>
-            </div>
-            <a href="/blog/automatizacion-procesos-n8n-make" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg">Leer más</a>
-          </div>
-        </div>
-        <!-- Post 2 -->
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <a href="/blog/bases-de-datos-eficientes">
-              <img
-                src="/images/BasesdeDatos.webp"
-                alt="Bases de Datos Eficientes"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </a>
-          </div>
-          <div class="p-8">
-            <h3 class="mb-2.5 text-xl text-dark dark:text-light">Bases de Datos Eficientes para tu Negocio</h3>
-            <p class="text-gray dark:text-light-gray mb-4">La importancia de un diseño de bases de datos eficiente para gestionar tu información crítica.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4 justify-center">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Bases de Datos</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Optimización</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Datos</span>
-            </div>
-            <a href="/blog/bases-de-datos-eficientes" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg">Leer más</a>
-          </div>
-        </div>
-        <!-- Post 3 -->
-        <div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
-          <div class="h-[200px] overflow-hidden">
-            <a href="/blog/desarrollo-web-a-medida">
-              <img
-               src="/images/DesarrolloWeb.webp"
-                alt="Desarrollo Web a Medida"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </a>
-          </div>
-          <div class="p-8">
-            <h3 class="mb-2.5 text-xl text-dark dark:text-light">Desarrollo Web a Medida: Experiencias Únicas</h3>
-            <p class="text-gray dark:text-light-gray mb-4">Creando sitios y aplicaciones únicas, adaptadas a tus necesidades con tecnologías modernas.</p>
-            <div class="flex flex-wrap gap-2.5 mb-4 justify-center">
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Desarrollo Web</span>
-              <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm font-medium">Diseño Web</span>
-            </div>
-            <a href="/blog/desarrollo-web-a-medida" class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg">Leer más</a>
-          </div>
-        </div>
+        {posts.map(post => (
+          <GridCard
+            href={post.href}
+            imgSrc={post.imgSrc}
+            imgAlt={post.imgAlt}
+            title={post.title}
+            description={post.description}
+            tags={post.tags}
+          />
+        ))}
       </div>
     </div>
   </section>

@@ -12,13 +12,19 @@ const isActive = (href: string) => {
   return currentPath.startsWith(href);
 };
 
-const linkClasses = "px-4 py-2 rounded-md text-base font-semibold transition-colors duration-300";
-const activeLinkClasses = "bg-primary text-white";
-const inactiveLinkClasses = "text-dark hover:bg-primary/10 hover:text-primary dark:text-light dark:hover:bg-primary/20 dark:hover:text-light";
-
-const mobileLinkClasses = "block px-4 py-3 text-xl rounded-lg font-semibold transition-colors duration-300 w-full text-center";
-const activeMobileLinkClasses = "bg-primary text-white";
-const inactiveMobileLinkClasses = "text-dark hover:bg-primary/10 dark:text-light dark:hover:bg-primary/20";
+// Configuración centralizada de estilos de navegación
+const navStyles = {
+  desktop: {
+    base: "px-4 py-2 rounded-md text-base font-semibold transition-colors duration-300",
+    active: "bg-primary text-white",
+    inactive: "text-dark hover:bg-primary/10 hover:text-primary dark:text-light dark:hover:bg-primary/20 dark:hover:text-light"
+  },
+  mobile: {
+    base: "block px-4 py-3 text-xl rounded-lg font-semibold transition-colors duration-300 w-full text-center",
+    active: "bg-primary text-white",
+    inactive: "text-dark hover:bg-primary/10 dark:text-light dark:hover:bg-primary/20"
+  }
+};
 
 interface NavLink {
   href: string;
@@ -45,7 +51,7 @@ const navLinks: NavLink[] = [
 ];
 ---
 
-<header class="bg-white/80 backdrop-blur-md shadow-md fixed w-full top-0 z-50 dark:bg-dark/80 dark:shadow-lg">
+<header class="fixed bg-white/80 backdrop-blur-md shadow-md w-full top-0 z-50 dark:bg-dark/80 dark:shadow-lg h-[80px]">
   <div class="w-full max-w-screen-xl mx-auto px-5">
     <nav class="flex justify-between items-center py-3">
       <!-- Logo -->
@@ -61,8 +67,8 @@ const navLinks: NavLink[] = [
             <a
               href={link.href}
               class:list={[
-                linkClasses,
-                isActive(link.href) ? activeLinkClasses : inactiveLinkClasses,
+                navStyles.desktop.base,
+                isActive(link.href) ? navStyles.desktop.active : navStyles.desktop.inactive,
                 link.subLinks ? "flex items-center gap-1.5" : ""
               ]}
             >
@@ -91,7 +97,7 @@ const navLinks: NavLink[] = [
       
       <!-- Right side controls -->
       <div class="hidden md:flex items-center gap-4">
-        <ThemeToggleButton class="hidden" />
+        <ThemeToggleButton />
         <a
           href="https://t.me/573208718037"
           target="_blank"
@@ -104,7 +110,7 @@ const navLinks: NavLink[] = [
       </div>
 
       <!-- Mobile Menu Toggle -->
-      <button id="menuToggle" class="md:hidden z-50 flex flex-col justify-center items-center w-8 h-8" aria-label="Abrir menú" aria-expanded="false">
+      <button id="menuToggle" class="md:hidden z-50 flex flex-col justify-center items-center w-8 h-8" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="mobileMenu">
         <span class="block w-6 h-0.5 bg-dark dark:bg-light transition-transform duration-300 ease-in-out"></span>
         <span class="block w-6 h-0.5 bg-dark dark:bg-light my-1.5 transition-opacity duration-300 ease-in-out"></span>
         <span class="block w-6 h-0.5 bg-dark dark:bg-light transition-transform duration-300 ease-in-out"></span>
@@ -113,16 +119,17 @@ const navLinks: NavLink[] = [
   </div>
 
   <!-- Mobile Menu -->
-  <div id="mobileMenu" class="md:hidden fixed top-0 left-0 w-full h-screen bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center transition-transform duration-500 ease-in-out transform -translate-y-full z-40 dark:bg-dark/95">
+  <div id="mobileMenu" class="md:hidden fixed top-0 left-0 w-full h-screen bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center transition-transform duration-500 ease-in-out transform -translate-y-full z-40 dark:bg-dark/95" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title">
+    <h2 id="mobile-menu-title" class="sr-only">Menú de navegación móvil</h2>
     
-    <ul class="flex flex-col items-center space-y-4 w-full px-10">
+    <ul class="flex flex-col items-center space-y-4 w-full px-10" role="menu">
        {navLinks.map(link => (
           <li class="w-full">
              <a
               href={link.href}
               class:list={[
-                mobileLinkClasses,
-                isActive(link.href) ? activeMobileLinkClasses : inactiveMobileLinkClasses
+                navStyles.mobile.base,
+                isActive(link.href) ? navStyles.mobile.active : navStyles.mobile.inactive
               ]}
               data-is-nav-link
             >
@@ -148,41 +155,3 @@ const navLinks: NavLink[] = [
   </div>
 </header>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const menuToggle = document.getElementById('menuToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const navLinks = document.querySelectorAll('[data-is-nav-link]');
-
-    if (menuToggle && mobileMenu) {
-      menuToggle.addEventListener('click', () => {
-        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-        menuToggle.setAttribute('aria-expanded', String(!isExpanded));
-        
-        // Toggle menu visibility
-        mobileMenu.classList.toggle('-translate-y-full');
-        mobileMenu.classList.toggle('translate-y-0');
-
-        // Animate hamburger icon
-        const spans = menuToggle.querySelectorAll('span');
-        spans[0].classList.toggle('rotate-45');
-        spans[0].classList.toggle('translate-y-2');
-        spans[1].classList.toggle('opacity-0');
-        spans[2].classList.toggle('-rotate-45');
-        spans[2].classList.toggle('-translate-y-2');
-        
-        // Toggle body scroll
-        document.body.classList.toggle('overflow-hidden');
-      });
-    }
-
-    // Close menu when a link is clicked
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        if (mobileMenu && mobileMenu.classList.contains('translate-y-0')) {
-          menuToggle?.click();
-        }
-      });
-    });
-  });
-</script>

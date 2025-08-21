@@ -1,0 +1,17 @@
+---
+// src/components/ServiceCard.astro
+import { Icon } from 'astro-icon/components';
+interface Props {
+  icon: string;
+  title: string;
+  description: string;
+}
+const { icon, title, description } = Astro.props;
+---
+<div class="bg-white dark:bg-secondary rounded-[15px] p-8 shadow-lg transition-all duration-300 text-center border-t-4 border-primary hover:-translate-y-1.5 hover:shadow-2xl">
+  <div class="w-20 h-20 bg-gradient-to-br from-primary to-[#4a6fc5] rounded-full flex items-center justify-center mx-auto mb-6">
+    <Icon name={icon} class="w-10 h-10 text-white" />
+  </div>
+  <h3 class="text-xl mb-4 text-dark dark:text-light">{title}</h3>
+  <p class="text-gray dark:text-light-gray">{description}</p>
+</div>

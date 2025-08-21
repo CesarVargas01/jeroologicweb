@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { generateStructuredData, generatePageMetadata } from '../utils/seo';
 
 interface Props {
   title: string;
@@ -10,14 +11,19 @@ interface Props {
 
 const { title, description, image } = Astro.props;
 
-// Descripción por defecto si no se proporciona
-const finalDescription = description || "Jeroo Logic: Soluciones de software y tecnología para optimizar tus procesos empresariales con automatización, bases de datos y desarrollo web a medida.";
+// Generar metadatos usando utilidades
+const metadata = generatePageMetadata(title, description, image);
 
 // URL canónica para SEO
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-// URL de la imagen para redes sociales (usa una por defecto si no se proporciona)
-const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/default-social.webp', Astro.site);
+// URL de la imagen para redes sociales
+const socialImageURL = image
+  ? new URL(image, Astro.site)
+  : new URL('/images/default-social.webp', Astro.site);
+
+// Generar datos estructurados usando utilidades
+const structuredData = generateStructuredData();
 ---
 
 <!doctype html>
@@ -28,28 +34,35 @@ const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/def
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 
     <!-- SEO Metadatos Fundamentales -->
-    <title>{title}</title>
-    <meta name="description" content={finalDescription} />
+    <title>{metadata.title}</title>
+    <meta name="description" content={metadata.description} />
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={finalDescription} />
+    <meta property="og:title" content={metadata.title} />
+    <meta property="og:description" content={metadata.description} />
     <meta property="og:image" content={socialImageURL} />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={finalDescription} />
+    <meta property="twitter:title" content={metadata.title} />
+    <meta property="twitter:description" content={metadata.description} />
     <meta property="twitter:image" content={socialImageURL} />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(structuredData)}
+      is:inline
+    />
 
     <link
       rel="preload"
@@ -64,194 +77,50 @@ const socialImageURL = image ? new URL(image, Astro.site) : new URL('/images/def
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link
-      rel="preload"
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
+      rel="stylesheet"
     />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
     <link rel="stylesheet" href="/global.css" />
+
+    <!-- JavaScript modules -->
+    <script src="/js/navigation.js" defer is:inline></script>
+    <script src="/js/forms.js" defer is:inline></script>
+    <script src="/js/scroll-effects.js" defer is:inline></script>
+    <!-- Service Worker (opcional - descomenta para habilitar cache offline) -->
+    <!-- <script src="/js/sw-register.js" defer is:inline></script> -->
   </head>
   <body>
-    <a href="#main-content" class="absolute z-50 top-4 left-4 -translate-y-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 rounded-lg shadow-lg transition-transform duration-300 focus:translate-y-0">Saltar al contenido principal</a>
+    <!-- Skip to content link for accessibility -->
+    <a
+      href="#main-content"
+      class="absolute z-50 top-4 left-4 -translate-y-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 rounded-lg shadow-lg transition-transform duration-300 focus:translate-y-0"
+      >Saltar al contenido principal</a
+    >
+
+    <!-- Header -->
     <Header />
+
+    <!-- Main content -->
     <main id="main-content">
       <slot />
     </main>
-    <Footer />
-    <script client:load>
-      if (typeof document !== 'undefined') {
-        // Mobile menu functionality
-        const menuToggle = document.getElementById('menuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const closeMenu = document.getElementById('closeMenu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-        
-        if (menuToggle && mobileMenu) {
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                menuToggle.setAttribute('aria-expanded', 'true');
-            });
-        }
-        
-        if (closeMenu && mobileMenu) {
-            closeMenu.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = 'auto';
-                menuToggle.setAttribute('aria-expanded', 'false');
-            });
-        }
-        
-        if(mobileLinks.length > 0 && mobileMenu) {
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                    if (menuToggle) {
-                        menuToggle.setAttribute('aria-expanded', 'false');
-                    }
-                });
-            });
-        }
-        
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                if (mobileMenu && menuToggle) {
-                    // Close mobile menu if open
-                    mobileMenu.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                    menuToggle.setAttribute('aria-expanded', 'false');
-                }
-                
-                const targetElement = document.querySelector(this.getAttribute('href'));
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-        
-        // Form submission handling
-        const contactForm = document.getElementById('contactForm');
-        if (contactForm) {
-            contactForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
 
-                const submitButton = contactForm.querySelector('button[type="submit"]');
-                if (!submitButton) return;
-                const originalButtonText = submitButton.innerHTML;
-                
-                const nameInput = document.getElementById('name');
-                const emailInput = document.getElementById('email');
-                const companyInput = document.getElementById('company');
-                const messageInput = document.getElementById('message');
-
-                const data = {
-                    name: nameInput ? nameInput.value : '',
-                    email: emailInput ? emailInput.value : '',
-                    company: companyInput ? companyInput.value : '',
-                    message: messageInput ? messageInput.value : ''
-                };
-
-                if (!data.name || !data.email || !data.message) {
-                    alert('Por favor completa todos los campos requeridos.');
-                    return;
-                }
-
-                submitButton.disabled = true;
-                submitButton.innerHTML = 'Enviando...';
-
-                try {
-                    const response = await fetch('/api/submit-form', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data),
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        alert(result.message || `¡Gracias ${data.name}! Tu mensaje ha sido enviado.`);
-                        contactForm.reset();
-                    } else {
-                        alert(`Error: ${result.message || 'No se pudo enviar el mensaje.'}`);
-                    }
-                } catch (error) {
-                    console.error('Error al enviar el formulario:', error);
-                    alert('Ocurrió un error de red al enviar el formulario. Por favor, inténtalo de nuevo.');
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalButtonText;
-                }
-            });
-        }
-        
-        // Header scroll effect
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (header) {
-                if (window.scrollY > 100) {
-                    header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-                } else {
-                    header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-                }
-            }
-        });
-
-        // Scroll to top button functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-            
-
-            if (scrollToTopBtn) {
-                window.addEventListener('scroll', () => {
-                    
-                    if (window.scrollY > 300) {
-                        if (!scrollToTopBtn.classList.contains('visible')) {
-                            scrollToTopBtn.classList.add('visible');
-                            
-                        }
-                    } else {
-                        if (scrollToTopBtn.classList.contains('visible')) {
-                            scrollToTopBtn.classList.remove('visible');
-                            
-                        }
-                    }
-                });
-
-                scrollToTopBtn.addEventListener('click', () => {
-                    
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                });
-            }
-        });
-      }
-    </script>
+    <!-- Floating action buttons -->
     <a
       href="https://wa.me/573208718037"
       class="whatsapp-btn"
       target="_blank"
+      rel="noopener noreferrer"
       aria-label="Chatea con nosotros por WhatsApp"
     >
       <i class="fab fa-whatsapp"></i>
     </a>
+
     <button id="scrollToTopBtn" aria-label="Volver arriba">
       <i class="fas fa-arrow-up"></i>
     </button>
+
+    <!-- Footer -->
+    <Footer />
   </body>
 </html>

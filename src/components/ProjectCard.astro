@@ -1,0 +1,41 @@
+---
+// src/components/ProjectCard.astro
+interface Props {
+  imgSrc: string;
+  imgAlt: string;
+  title: string;
+  description: string;
+  tags: string[];
+  contactLink?: string;
+}
+
+const { 
+  imgSrc, 
+  imgAlt, 
+  title, 
+  description, 
+  tags, 
+  contactLink = "https://wa.me/573208718037" 
+} = Astro.props;
+---
+
+<div class="group bg-white dark:bg-secondary rounded-[15px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-2.5">
+  <div class="h-[200px] overflow-hidden">
+    <img
+      src={imgSrc}
+      alt={imgAlt}
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+      loading="lazy"
+    />
+  </div>
+  <div class="p-8">
+    <h3 class="mb-2.5 dark:text-light">{title}</h3>
+    <p class="text-gray dark:text-light-gray mb-4">{description}</p>
+    <div class="flex flex-wrap gap-2.5 mb-4">
+      {tags.map(tag => (
+        <span class="bg-light-gray text-dark dark:bg-gray dark:text-light px-3 py-1.5 rounded-full text-sm">{tag}</span>
+      ))}
+    </div>
+    <a href={contactLink} class="inline-block bg-primary text-white px-7 py-3 rounded-full font-semibold transition-all duration-300 border-none cursor-pointer text-base hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-lg btn-outline" target="_blank">Contáctanos</a>
+  </div>
+</div>
